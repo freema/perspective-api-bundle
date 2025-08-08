@@ -1,0 +1,13 @@
+demo:
+  path: /
+  controller: Freema\PerspectiveApiBundle\Dev\Controller\DemoController::index
+
+analyze:
+  path: /analyze
+  controller: Freema\PerspectiveApiBundle\Dev\Controller\DemoController::analyze
+  methods: [POST]
+
+form_demo:
+  path: /form-demo
+  controller: Freema\PerspectiveApiBundle\Dev\Controller\DemoController::formDemo
+  methods: [GET, POST]

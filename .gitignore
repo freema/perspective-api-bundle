@@ -1,23 +1,36 @@
-# Cache and logs (Symfony2)
+# Dependencies
+/vendor/
+/node_modules/
+
+# Composer lock file - not needed for libraries
+composer.lock
+
+# Environment
+/.env.local
+/.env.local.php
+/.env.*.local
+
+# Development environment
+/dev/.env
+
+# Cache and logs (Symfony)
 /app/cache/*
 /app/logs/*
-!app/cache/.gitkeep
-!app/logs/.gitkeep
-
-# Email spool folder
-/app/spool/*
-
-# Cache, session files and logs (Symfony3)
 /var/cache/*
 /var/logs/*
 /var/sessions/*
+/var/log/*
 !var/cache/.gitkeep
 !var/logs/.gitkeep
 !var/sessions/.gitkeep
-
-# Logs (Symfony4)
-/var/log/*
 !var/log/.gitkeep
+
+# Development cache
+/dev/cache/*
+!dev/cache/.gitkeep
+
+# Email spool folder
+/app/spool/*
 
 # Parameters
 /app/config/parameters.yml
@@ -26,18 +39,17 @@
 # Managed by Composer
 /app/bootstrap.php.cache
 /var/bootstrap.php.cache
-/bin/*
-!bin/console
-!bin/symfony_requirements
-/vendor/
 
 # Assets and user uploads
 /web/bundles/
 /web/uploads/
+/public/bundles/
+/public/uploads/
 
 # PHPUnit
 /app/phpunit.xml
 /phpunit.xml
+/.phpunit.result.cache
 
 # Build data
 /build/
@@ -50,3 +62,31 @@
 
 # Embedded web-server pid file
 /.web-server-pid
+
+# IDE files
+/.idea/
+/.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Testing
+/.symfony-test/
+
+# Code coverage
+/coverage/
+
+# PHP CS Fixer
+/.php-cs-fixer.cache
+
+# PHPStan
+/.phpstan.cache

@@ -1,0 +1,15 @@
+parameters:
+    level: max
+    paths:
+        - src
+    excludePaths:
+        - tests
+        - src/DependencyInjection/
+        - src/PerspectiveApiBundle.php
+        - src/Form/ # Optional Symfony Form integration - requires symfony/form
+    ignoreErrors:
+        # Array type specifications not needed for this library
+        -
+            message: '#.* has no value type specified in iterable type array#'
+        -
+            message: '#.* has parameter .* with no value type specified in iterable type array#'
