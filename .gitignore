@@ -2,6 +2,9 @@
 /vendor/
 /node_modules/
 
+# Composer lock file - not needed for libraries
+composer.lock
+
 # Environment
 /.env.local
 /.env.local.php
