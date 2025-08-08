@@ -8,5 +8,8 @@ parameters:
         - src/PerspectiveApiBundle.php
         - src/Form/ # Optional Symfony Form integration - requires symfony/form
     ignoreErrors:
+        # Array type specifications not needed for this library
         -
-            message: '#Offset .* does not exist on array.*#'
+            message: '#.* has no value type specified in iterable type array#'
+        -
+            message: '#.* has parameter .* with no value type specified in iterable type array#'
