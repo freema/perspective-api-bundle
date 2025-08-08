@@ -35,7 +35,9 @@ jobs:
           coverage: none
 
       - name: Install composer dependencies
-        run: composer install --no-interaction --no-progress --prefer-lowest
+        run: |
+          composer update --no-interaction --no-progress --prefer-lowest
+          composer install --no-interaction --no-progress
 
       - name: Verify phpstan.neon exists
         run: |
@@ -90,13 +92,22 @@ jobs:
           rm -rf .symfony-test
           mkdir -p .symfony-test/vendor
           cp -r src .symfony-test/
-          cp -r tests .symfony-test/
-          # Use appropriate PHPUnit config based on Symfony version
+          
+          # Copy tests based on Symfony version
           if [ "${{ matrix.symfony-version }}" = "7.1" ]; then
+            # Symfony 7.1 - copy all tests including Form tests
+            cp -r tests .symfony-test/
             cp phpunit-with-form.xml.dist .symfony-test/phpunit.xml
           else
+            # Symfony 5.4/6.4 - copy tests except Form tests
+            mkdir -p .symfony-test/tests
+            cp -r tests/DependencyInjection .symfony-test/tests/
+            cp -r tests/Dto .symfony-test/tests/
+            cp -r tests/Service .symfony-test/tests/
+            cp -r tests/Validator .symfony-test/tests/
             cp phpunit.xml.dist .symfony-test/phpunit.xml
           fi
+          
           cp ${{ matrix.test-directory }}/composer.json .symfony-test/composer.json
 
       - name: Install test dependencies
