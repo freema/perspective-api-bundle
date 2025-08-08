@@ -31,11 +31,11 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: '8.2'
           coverage: none
 
       - name: Install composer dependencies
-        run: composer install --no-interaction --no-progress
+        run: composer install --no-interaction --no-progress --prefer-lowest
 
       - name: Verify phpstan.neon exists
         run: |
@@ -91,7 +91,12 @@ jobs:
           mkdir -p .symfony-test/vendor
           cp -r src .symfony-test/
           cp -r tests .symfony-test/
-          cp phpunit.xml.dist .symfony-test/phpunit.xml
+          # Use appropriate PHPUnit config based on Symfony version
+          if [ "${{ matrix.symfony-version }}" = "7.1" ]; then
+            cp phpunit-with-form.xml.dist .symfony-test/phpunit.xml
+          else
+            cp phpunit.xml.dist .symfony-test/phpunit.xml
+          fi
           cp ${{ matrix.test-directory }}/composer.json .symfony-test/composer.json
 
       - name: Install test dependencies
