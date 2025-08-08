@@ -1,7 +1,7 @@
 # Perspective API Bundle for Symfony
 
 [![Latest Stable Version](https://img.shields.io/packagist/v/freema/perspective-api-bundle.svg)](https://packagist.org/packages/freema/perspective-api-bundle)
-[![License](https://img.shields.io/packagist/l/freema/perspective-api-bundle.svg)](https://packagist.org/packages/freema/perspective-api-bundle)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![PHP Version Require](https://img.shields.io/packagist/php-v/freema/perspective-api-bundle.svg)](https://packagist.org/packages/freema/perspective-api-bundle)
 [![Symfony Version](https://img.shields.io/badge/symfony-%5E5.4%7C%5E6.0%7C%5E7.0-brightgreen)](https://symfony.com)
 
