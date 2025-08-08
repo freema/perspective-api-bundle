@@ -1,0 +1,152 @@
+version: '3'
+
+vars:
+  COMPOSE_FILE: docker-compose.yml
+  COMPOSE: docker compose
+  CONTAINER_NAME: perspective-api-bundle-php
+  TEST_DIR: .symfony-test
+
+tasks:
+  # Setup Development Environment
+  init:
+    desc: 'Initialize development environment completely'
+    cmds:
+      - task: up
+      - task: vendor:install
+      - task: composer:dump-autoload
+      - task: dev:setup
+      - echo "Development environment initialized successfully!"
+      - echo "⚠️  Don't forget to configure your API key in dev/.env"
+    aliases: ['i', 'setup']
+
+  dev:setup:
+    desc: 'Setup development environment configuration'
+    cmds:
+      - |
+        if [ ! -f dev/.env ]; then
+          cp dev/.env.example dev/.env
+          echo "✅ Created dev/.env from example"
+          echo "📝 Please edit dev/.env and add your PERSPECTIVE_API_KEY"
+        else
+          echo "ℹ️  dev/.env already exists"
+        fi
+    aliases: ['dev:config']
+
+  vendor:install:
+    desc: 'Install vendor dependencies'
+    cmd: |
+      docker exec -it {{ .CONTAINER_NAME }} sh -c "
+        if ! command -v composer > /dev/null 2>&1; then
+          echo 'Installing Composer...'
+          curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+        fi
+        composer install --no-interaction
+      "
+    aliases: ['composer:install', 'install']
+    
+  composer:dump-autoload:
+    desc: 'Update composer autoloader'
+    cmd: 'docker exec -it {{ .CONTAINER_NAME }} composer dump-autoload'
+    aliases: ['dump-autoload', 'autoload']
+
+  # Docker Management
+  up:
+    desc: 'Start development environment'
+    cmd: |
+      {{ .COMPOSE }} up -d
+    aliases: ['u']
+
+  down:
+    desc: 'Stop development environment'
+    cmd: '{{ .COMPOSE }} down'
+    aliases: ['d']
+
+  restart:
+    desc: 'Restart development environment'
+    cmds:
+      - task: down
+      - task: up
+    aliases: ['r']
+
+  # Development Tasks
+  php:shell:
+    desc: 'Open shell in PHP container'
+    cmd: 'docker exec -it {{ .CONTAINER_NAME }} bash'
+    aliases: ['sh']
+
+  dev:serve:
+    desc: 'Start development server'
+    cmd: 'docker exec -it {{ .CONTAINER_NAME }} php -S 0.0.0.0:8080 -t dev/'
+    aliases: ['serve']
+
+  # Test Environment Setup
+  test:prepare:
+    desc: 'Prepare test environment'
+    cmds:
+      - rm -rf {{ .TEST_DIR }}
+      - mkdir -p {{ .TEST_DIR }}/vendor
+      - cp -r src {{ .TEST_DIR }}/
+      - cp -r tests {{ .TEST_DIR }}/
+      - cp phpunit.xml.dist {{ .TEST_DIR }}/phpunit.xml
+
+  # Testing Different Symfony Versions
+  test:symfony54:
+    desc: 'Test with Symfony 5.4'
+    cmds:
+      - task: test:prepare
+      - cp test/symfony54/composer.json {{ .TEST_DIR }}/composer.json
+      - docker exec -it {{ .CONTAINER_NAME }} sh -c "cd /code/{{ .TEST_DIR }} && composer install --no-interaction"
+      - docker exec -it {{ .CONTAINER_NAME }} sh -c "cd /code/{{ .TEST_DIR }} && vendor/bin/phpunit -c phpunit.xml --testdox --colors=always"
+    aliases: ['t:54']
+
+  test:symfony64:
+    desc: 'Test with Symfony 6.4'
+    cmds:
+      - task: test:prepare
+      - cp test/symfony64/composer.json {{ .TEST_DIR }}/composer.json
+      - docker exec -it {{ .CONTAINER_NAME }} sh -c "cd /code/{{ .TEST_DIR }} && composer install --no-interaction"
+      - docker exec -it {{ .CONTAINER_NAME }} sh -c "cd /code/{{ .TEST_DIR }} && vendor/bin/phpunit"
+    aliases: ['t:64']
+
+  test:symfony71:
+    desc: 'Test with Symfony 7.1'
+    cmds:
+      - task: test:prepare
+      - cp test/symfony71/composer.json {{ .TEST_DIR }}/composer.json
+      - docker exec -it {{ .CONTAINER_NAME }} sh -c "cd /code/{{ .TEST_DIR }} && composer install --no-interaction"
+      - docker exec -it {{ .CONTAINER_NAME }} sh -c "cd /code/{{ .TEST_DIR }} && vendor/bin/phpunit"
+    aliases: ['t:71']
+
+  test:all:
+    desc: 'Test with all Symfony versions'
+    cmds:
+      - task: test:symfony54
+      - task: test:symfony64
+      - task: test:symfony71
+    aliases: ['t:all']
+
+  test:cleanup:
+    desc: 'Clean test environment'
+    cmd: rm -rf {{ .TEST_DIR }}
+    aliases: ['t:clean']
+
+  # Code Quality
+  stan:
+    desc: 'Run PHPStan analysis'
+    cmd: 'docker exec -it {{ .CONTAINER_NAME }} vendor/bin/phpstan analyse src'
+    aliases: ['lint']
+
+  cs:fix:
+    desc: 'Fix code style'
+    cmd: 'docker exec -it {{ .CONTAINER_NAME }} vendor/bin/php-cs-fixer fix'
+    aliases: ['fix', 'fixer']
+
+  test:
+    desc: 'Run PHPUnit tests'
+    cmd: 'docker exec -it {{ .CONTAINER_NAME }} vendor/bin/phpunit'
+    aliases: ['t']
+
+  default:
+    desc: 'Show available commands'
+    cmds:
+      - task --list

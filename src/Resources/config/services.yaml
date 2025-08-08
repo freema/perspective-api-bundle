@@ -1,0 +1,20 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    Freema\PerspectiveApiBundle\Service\PerspectiveApiService:
+        arguments:
+            $httpClient: '@http_client'
+            $apiKey: '%perspective_api.api_key%'
+            $config: '%perspective_api.config%'
+
+    Freema\PerspectiveApiBundle\Validator\PerspectiveContentValidator:
+        arguments:
+            $perspectiveApiService: '@Freema\PerspectiveApiBundle\Service\PerspectiveApiService'
+        tags:
+            - { name: validator.constraint_validator }
+
+    perspective_api.service:
+        alias: Freema\PerspectiveApiBundle\Service\PerspectiveApiService
+        public: true
