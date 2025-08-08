@@ -9,4 +9,4 @@ parameters:
         - src/Form/ # Optional Symfony Form integration - requires symfony/form
     ignoreErrors:
         -
-            identifier: missingType.iterableValue
+            message: '#Offset .* does not exist on array.*#'

@@ -10,13 +10,7 @@
          verbose="true">
     <testsuites>
         <testsuite name="default">
-            <directory>tests/DependencyInjection</directory>
-            <directory>tests/Dto</directory>
-            <directory>tests/Service</directory>
-            <directory>tests/Validator</directory>
-        </testsuite>
-        <testsuite name="form">
-            <directory>tests/Form</directory>
+            <directory>tests</directory>
         </testsuite>
     </testsuites>
 

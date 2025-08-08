@@ -142,8 +142,8 @@ tasks:
     aliases: ['fix', 'fixer']
 
   test:
-    desc: 'Run PHPUnit tests (without form tests)'
-    cmd: 'docker exec -it {{ .CONTAINER_NAME }} vendor/bin/phpunit --testsuite=default'
+    desc: 'Run PHPUnit tests'
+    cmd: 'docker exec -it {{ .CONTAINER_NAME }} vendor/bin/phpunit'
     aliases: ['t']
 
   default:

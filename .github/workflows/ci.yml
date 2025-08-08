@@ -92,22 +92,8 @@ jobs:
           rm -rf .symfony-test
           mkdir -p .symfony-test/vendor
           cp -r src .symfony-test/
-          
-          # Copy tests based on Symfony version
-          if [ "${{ matrix.symfony-version }}" = "7.1" ]; then
-            # Symfony 7.1 - copy all tests including Form tests
-            cp -r tests .symfony-test/
-            cp phpunit-with-form.xml.dist .symfony-test/phpunit.xml
-          else
-            # Symfony 5.4/6.4 - copy tests except Form tests
-            mkdir -p .symfony-test/tests
-            cp -r tests/DependencyInjection .symfony-test/tests/
-            cp -r tests/Dto .symfony-test/tests/
-            cp -r tests/Service .symfony-test/tests/
-            cp -r tests/Validator .symfony-test/tests/
-            cp phpunit.xml.dist .symfony-test/phpunit.xml
-          fi
-          
+          cp -r tests .symfony-test/
+          cp phpunit.xml.dist .symfony-test/phpunit.xml
           cp ${{ matrix.test-directory }}/composer.json .symfony-test/composer.json
 
       - name: Install test dependencies
