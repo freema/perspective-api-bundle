@@ -23,6 +23,15 @@ class PerspectiveApiService
         'THREAT',
     ];
 
+    private const DEFAULT_FALLBACK_THRESHOLDS = [
+        'TOXICITY' => 0.7,
+        'SEVERE_TOXICITY' => 0.5,
+        'IDENTITY_ATTACK' => 0.6,
+        'INSULT' => 0.6,
+        'PROFANITY' => 0.8,
+        'THREAT' => 0.5,
+    ];
+
     private ?ThresholdProviderInterface $thresholdProvider = null;
     private mixed $thresholdResolver = null;
     private array $staticThresholds = [];
@@ -179,7 +188,16 @@ class PerspectiveApiService
             return $this->validateThresholds($this->thresholdProvider->getThresholds());
         }
 
-        return $this->validateThresholds($this->staticThresholds);
+        $thresholds = $this->validateThresholds($this->staticThresholds);
+
+        if (empty($thresholds)) {
+            $thresholds = array_intersect_key(
+                self::DEFAULT_FALLBACK_THRESHOLDS,
+                array_flip($this->analyzeAttributes)
+            );
+        }
+
+        return $thresholds;
     }
 
     private function validateThresholds(array $thresholds): array
