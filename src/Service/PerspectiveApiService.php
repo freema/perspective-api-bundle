@@ -7,11 +7,15 @@ namespace Freema\PerspectiveApiBundle\Service;
 use Freema\PerspectiveApiBundle\Contract\ThresholdProviderInterface;
 use Freema\PerspectiveApiBundle\Dto\PerspectiveAnalysisResult;
 use Freema\PerspectiveApiBundle\Exception\PerspectiveApiException;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
+use Psr\Log\NullLogger;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
-class PerspectiveApiService
+class PerspectiveApiService implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
     private const API_BASE_URL = 'https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze';
 
     private const DEFAULT_ATTRIBUTES = [
@@ -21,6 +25,15 @@ class PerspectiveApiService
         'INSULT',
         'PROFANITY',
         'THREAT',
+    ];
+
+    private const DEFAULT_FALLBACK_THRESHOLDS = [
+        'TOXICITY' => 0.7,
+        'SEVERE_TOXICITY' => 0.5,
+        'IDENTITY_ATTACK' => 0.6,
+        'INSULT' => 0.6,
+        'PROFANITY' => 0.8,
+        'THREAT' => 0.5,
     ];
 
     private ?ThresholdProviderInterface $thresholdProvider = null;
@@ -41,6 +54,7 @@ class PerspectiveApiService
         $this->staticThresholds = $config['thresholds'] ?? [];
         $this->analyzeAttributes = $config['analyze_attributes'] ?? self::DEFAULT_ATTRIBUTES;
         $this->defaultLanguage = $config['default_language'] ?? 'en';
+        $this->logger = new NullLogger();
     }
 
     public function setThresholdProvider(ThresholdProviderInterface $provider): self
@@ -63,10 +77,25 @@ class PerspectiveApiService
         ?array $customThresholds = null,
         array $context = [],
     ): PerspectiveAnalysisResult {
+        $this->logger->debug('Starting Perspective API text analysis', [
+            'text_length' => strlen($text),
+            'language' => $language ?? $this->defaultLanguage,
+            'custom_thresholds_provided' => $customThresholds !== null,
+            'context_keys' => array_keys($context),
+        ]);
+
         $scores = $this->getScores($text, $language);
         $thresholds = $this->resolveThresholds($customThresholds, $context);
+        $result = new PerspectiveAnalysisResult($scores, $thresholds);
 
-        return new PerspectiveAnalysisResult($scores, $thresholds);
+        $this->logger->info('Perspective API analysis completed', [
+            'scores' => $scores,
+            'thresholds' => $thresholds,
+            'violations' => array_keys($result->getViolations()),
+            'is_acceptable' => $result->isAllowed(),
+        ]);
+
+        return $result;
     }
 
     public function getScores(string $text, ?string $language = null): array
@@ -136,12 +165,20 @@ class PerspectiveApiService
         $statusCode = $response->getStatusCode();
 
         if (200 !== $statusCode) {
-            throw PerspectiveApiException::apiRequestFailed(sprintf('HTTP %d: %s', $statusCode, $response->getContent(false)));
+            $errorContent = $response->getContent(false);
+            $this->logger->error('Perspective API request failed', [
+                'status_code' => $statusCode,
+                'response' => $errorContent,
+            ]);
+            throw PerspectiveApiException::apiRequestFailed(sprintf('HTTP %d: %s', $statusCode, $errorContent));
         }
 
         $data = $response->toArray();
 
         if (!isset($data['attributeScores'])) {
+            $this->logger->error('Invalid Perspective API response', [
+                'response_data' => $data,
+            ]);
             throw PerspectiveApiException::invalidApiResponse('Missing attributeScores in response');
         }
 
@@ -179,7 +216,21 @@ class PerspectiveApiService
             return $this->validateThresholds($this->thresholdProvider->getThresholds());
         }
 
-        return $this->validateThresholds($this->staticThresholds);
+        $thresholds = $this->validateThresholds($this->staticThresholds);
+
+        if (empty($thresholds)) {
+            $thresholds = array_intersect_key(
+                self::DEFAULT_FALLBACK_THRESHOLDS,
+                array_flip($this->analyzeAttributes)
+            );
+
+            $this->logger->info('Using fallback thresholds for Perspective API analysis', [
+                'attributes' => array_keys($thresholds),
+                'thresholds' => $thresholds,
+            ]);
+        }
+
+        return $thresholds;
     }
 
     private function validateThresholds(array $thresholds): array
@@ -188,6 +239,10 @@ class PerspectiveApiService
 
         foreach ($thresholds as $attribute => $threshold) {
             if (!is_numeric($threshold) || $threshold < 0.0 || $threshold > 1.0) {
+                $this->logger->error('Invalid threshold value detected', [
+                    'attribute' => $attribute,
+                    'threshold' => $threshold,
+                ]);
                 throw PerspectiveApiException::invalidThresholdValue($attribute, (float) $threshold);
             }
 
