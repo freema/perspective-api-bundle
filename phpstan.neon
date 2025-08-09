@@ -13,3 +13,7 @@ parameters:
             message: '#.* has no value type specified in iterable type array#'
         -
             message: '#.* has parameter .* with no value type specified in iterable type array#'
+        # Logger trait can be null before injection
+        -
+            message: '#Cannot call method .* on Psr\\Log\\LoggerInterface\|null#'
+            path: src/Service/PerspectiveApiService.php
