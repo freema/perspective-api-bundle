@@ -41,6 +41,7 @@ class PerspectiveApiService implements LoggerAwareInterface
     private array $staticThresholds = [];
     private array $analyzeAttributes = self::DEFAULT_ATTRIBUTES;
     private string $defaultLanguage = 'en';
+    private array $httpClientOptions = [];
 
     public function __construct(
         private readonly HttpClientInterface $httpClient,
@@ -54,6 +55,7 @@ class PerspectiveApiService implements LoggerAwareInterface
         $this->staticThresholds = $config['thresholds'] ?? [];
         $this->analyzeAttributes = $config['analyze_attributes'] ?? self::DEFAULT_ATTRIBUTES;
         $this->defaultLanguage = $config['default_language'] ?? 'en';
+        $this->httpClientOptions = $config['http_client_options'] ?? [];
         $this->logger = new NullLogger();
     }
 
@@ -110,13 +112,20 @@ class PerspectiveApiService implements LoggerAwareInterface
             'languages' => [$language],
         ];
 
-        $response = $this->httpClient->request('POST', self::API_BASE_URL, [
+        $options = [
             'query' => ['key' => $this->apiKey],
             'json' => $requestData,
             'headers' => [
                 'Content-Type' => 'application/json',
             ],
-        ]);
+        ];
+
+        // Allow http_client_options from config to override/extend request options
+        if (!empty($this->httpClientOptions)) {
+            $options = array_merge($options, $this->httpClientOptions);
+        }
+
+        $response = $this->httpClient->request('POST', self::API_BASE_URL, $options);
 
         return $this->parseScoresFromResponse($response);
     }
