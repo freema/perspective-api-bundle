@@ -49,6 +49,10 @@ class Configuration implements ConfigurationInterface
                     ->scalarPrototype()->end()
                     ->defaultValue(['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT'])
                 ->end()
+                ->arrayNode('http_client_options')
+                    ->info('Additional options for HTTP client (proxy, timeout, etc.)')
+                    ->variablePrototype()->end()
+                ->end()
             ->end();
 
         return $treeBuilder;

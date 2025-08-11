@@ -39,6 +39,43 @@ This change reflects Google's commitment to improving the API with cutting-edge 
 - Symfony 5.4, 6.x, or 7.x
 - Google Perspective API key ([Get one here](https://developers.perspectiveapi.com/s/docs-get-started))
 
+## 🔧 Advanced Configuration
+
+### HTTP Client Options
+
+The bundle supports custom HTTP client configuration for environments that require proxy servers or specific timeouts:
+
+```yaml
+# config/packages/perspective_api.yaml
+perspective_api:
+    api_key: '%env(PERSPECTIVE_API_KEY)%'
+    
+    # Configure HTTP client options
+    http_client_options:
+        # Use proxy server
+        proxy: '%env(HTTP_PROXY)%'
+        
+        # Request timeout in seconds
+        timeout: 30
+        
+        # Maximum number of redirects
+        max_redirects: 5
+        
+        # Custom headers
+        headers:
+            'User-Agent': 'MyApp/1.0'
+        
+        # Any other Symfony HTTP client option
+        verify_peer: true
+        verify_host: true
+```
+
+This is particularly useful for:
+- Corporate environments with proxy requirements
+- Applications with specific network configurations
+- Custom timeout requirements for slow networks
+- Adding custom headers for monitoring or tracking
+
 ## 🛠️ Use Cases
 
 This bundle is perfect for:
@@ -93,6 +130,12 @@ perspective_api:
     
     # Optional: Custom threshold provider service
     # threshold_provider: 'my.custom.threshold.provider'
+    
+    # Optional: HTTP client options (proxy, timeout, etc.)
+    # http_client_options:
+    #     proxy: 'http://proxy.example.com:8080'
+    #     timeout: 30
+    #     max_redirects: 5
 ```
 
 ### Environment Variables
@@ -100,6 +143,10 @@ perspective_api:
 ```bash
 # .env.local
 PERSPECTIVE_API_KEY=your_api_key_here
+
+# Optional: HTTP proxy configuration
+HTTP_PROXY=http://proxy.example.com:8080
+HTTPS_PROXY=http://proxy.example.com:8080
 ```
 
 ## 📖 Usage
