@@ -1,6 +1,7 @@
 {
     "name": "freema/perspective-api-bundle",
     "description": "Symfony bundle for Google Perspective API - AI-powered content moderation with flexible threshold management, caching support, and multiple usage patterns. Modern alternative to abandoned wrappers.",
+    "abandoned": true,
     "type": "symfony-bundle",
     "keywords": [
         "symfony",

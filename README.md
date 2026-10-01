@@ -1,5 +1,8 @@
 # Perspective API Bundle for Symfony
 
+> [!WARNING]
+> **Archived, no longer maintained.** Google Jigsaw shuts down the Perspective API on December 31, 2026 ([perspectiveapi.com](https://perspectiveapi.com/)), and this bundle stops working with it. No new versions will be released. Plan a move to another moderation service before then.
+
 [![Latest Stable Version](https://img.shields.io/packagist/v/freema/perspective-api-bundle.svg)](https://packagist.org/packages/freema/perspective-api-bundle)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![PHP Version Require](https://img.shields.io/packagist/php-v/freema/perspective-api-bundle.svg)](https://packagist.org/packages/freema/perspective-api-bundle)
